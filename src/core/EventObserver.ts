@@ -1,28 +1,55 @@
+import { ICoordinates, IProtection } from '../types';
+
 export const EVENTS = {
   ENTITY_PICKED: 'ENTITY_PICKED',
   ENTITY_PLACED: 'ENTITY_PLACED',
+  ENTITY_DESTROYED: 'ENTITY_DESTROYED',
+  PROTECTION_DESTROYED: 'PROTECTION_DESTROYED',
 };
 
-export interface IEvent {
-  name: string;
-  callbacks: ((data?: unknown) => void)[];
+export interface IEntityPickedData {
+  coordinates: ICoordinates;
 }
 
+export interface IEntityPlacedData {
+  coordinates: ICoordinates;
+}
+
+export interface IEntityDestroyedData {
+  coordinates: ICoordinates;
+}
+
+export interface IProtectionDestroyedData {
+  protection: IProtection;
+  coordinates: ICoordinates;
+}
+
+export type EventData = IEntityPickedData | IEntityPlacedData | IProtectionDestroyedData;
+
+export type EventCallback = (data?: EventData) => void;
+export interface IEvent {
+  name: string;
+  callbacks: EventCallback[];
+}
+
+/**
+ * Can be used for UI to react on events.
+ * USAGE:
+ *   EventObserver.on(EVENTS.ENTITY_PICKED).do(() => console.log('entity_picked'))
+ */
 class EventObserver {
-  // USAGE:
-  // EventObserver.on(EVENT_NAMES.ENTITY_PICKED).do(() => console.log('entity_picked'))
   static events: IEvent[] = [];
 
-  static fire(eventName: string, data?: unknown): void {
+  static fire(eventName: string, data?: EventData): void {
     const subsriptor = this.__findSubscriptor(eventName);
     subsriptor.callbacks.forEach((callback) => callback(data));
   }
 
-  static on(event: string): { do: (callback: () => void) => void } {
+  static on(event: string): { do: (callback: EventCallback) => void } {
     const subscriptor = this.__findSubscriptor(event);
 
     return {
-      do: (callback: () => void): void => {
+      do: (callback: EventCallback): void => {
         subscriptor.callbacks.push(callback);
       },
     };
