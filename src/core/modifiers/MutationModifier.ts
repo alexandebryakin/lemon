@@ -1,5 +1,8 @@
-import { EEntityTypeNeutral, ICell, ICoordinates, IDimensions, IField, IModifier } from '../../types';
+import { EAction, EEntityTypeNeutral, ICell, ICoordinates, IDimensions, IField, IUserMove } from '../../types';
+import { Coordinates } from '../Coordinates';
+import CellContentMover from '../field-manipulators/CellContentMover';
 import Shape from '../Shape';
+import EntityDestroyer, { CellContentInvoker } from './CellContentInvoker';
 
 class ShapeLocator {
   static gatherCoordinates(field: IField, shape: Shape): ICoordinates[] {
@@ -59,34 +62,33 @@ class Matrix {
   }
 }
 
-class Coordinates {
-  static sum(a: ICoordinates, b: ICoordinates): ICoordinates {
-    return { x: a.x + b.x, y: a.y + b.y };
-  }
-}
-
-class MutationModifier implements IModifier {
+class MutationModifier {
   shapes: Shape[] = [];
+  // move: IUserMove;
 
-  constructor(shapes: Shape[]) {
+  constructor(shapes: Shape[], move?: IUserMove) {
     this.shapes = shapes;
+    // this.move = move;
   }
 
-  modify(field: IField) {
+  modify(field: IField, putMutatedTo?: ICoordinates) {
     const shape = this.locateShape(field, this.shapes);
 
     if (!shape) return;
 
-    const coordinates = ShapeLocator.gatherCoordinates(field, shape);
-    field.cellsAt(coordinates).forEach((cell: ICell) => cell.contentDestroy());
+    const area = ShapeLocator.gatherCoordinates(field, shape);
+
+    CellContentInvoker.upon(field).at(area).perform(EAction.DESTROY);
 
     if (shape.type == EEntityTypeNeutral.SimpleBlue) return;
     if (shape.type == EEntityTypeNeutral.SimpleGreen) return;
     if (shape.type == EEntityTypeNeutral.SimpleRed) return;
 
-    const entity = new Entity(shape.type);
+    const entity = new Entity(shape.type); // TODO: Delegate to some other class
 
-    field.put(entity, coordinates);
+    if (putMutatedTo) field.putAt(putMutatedTo, entity);
+
+    return field;
   }
 
   canModify(field: IField): boolean {

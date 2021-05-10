@@ -33,7 +33,9 @@ const CELL_CONTENT_TYPES = {
   GENERATOR: 'GENERATOR',
   ENTITY: 'ENTITY'
 }
-
+const GRAVITY_RULES = {
+  MOVABLE: 'MOVABLE', // --OR-- movable: true | false;
+}
 const config = {
   figures: [
     {
@@ -44,6 +46,13 @@ const config = {
         variations: [],
       },
       // mutationResult: mutations.DESTROY,
+      lifecycle: {
+        onMatch: { do: LIFECYCLE_ACTIONS.DESTROY },
+        onMatchEnd: { do: LIFECYCLE_ACTIONS.MUTATE },
+        onMutationEnd: { do: LIFECYCLE_ACTIONS.NOTHING },
+        onActivate: { do: LIFECYCLE_ACTIONS.NOTHING },
+        onTouch: { do: LIFECYCLE_ACTIONS.DESTROY_PROTECTION }
+      },
       onMatch: mutations.DESTROY,
       whenMatched: mutations.MUTATE,
       whenMutated: actions.STAY,
@@ -108,12 +117,9 @@ const config = {
     {
       type: 'CHAIN_1',
       image_url: 'https://to.some.image/chain/for/example1',
-      // destructOn: 'ACTIVATE'
+      destructibleBy: ['DESTROY', 'HARD_TOUCH'], // what about replacing HARD_TOUCH with PULSE --OR-- EXPLOSION WAVE
+      mutationAllowedUnderProtection: true,
     },
-    {
-      type: 'CHAIN_2',
-      image_url: 'https://to.some.image/chain/for/example2'
-    }
   ],
   generators: [
     {

@@ -16,7 +16,10 @@ class GeneratorModifier implements IModifier {
     if (!generatorCell) return;
 
     const coordinates = this.coordinatesByDirection(generatorCell);
-    field.cellAt(coordinates).put(EntityGenerator.produce(generatorCell.content)); ////// --??????--
+    if (!coordinates) return;
+    field.putAt(coordinates, EntityGenerator.produce(generatorCell.content));
+
+    return field;
   }
 
   private coordinatesByDirection(cell: ICell): ICoordinates | undefined {

@@ -1,4 +1,4 @@
-import { ICoordinates, IProtection } from '../types';
+import { ICoordinates, IProtector } from '../types';
 
 export const EVENTS = {
   ENTITY_PICKED: 'ENTITY_PICKED',
@@ -20,7 +20,7 @@ export interface IEntityDestroyedData {
 }
 
 export interface IProtectionDestroyedData {
-  protection: IProtection;
+  protection: IProtector;
   coordinates: ICoordinates;
 }
 
